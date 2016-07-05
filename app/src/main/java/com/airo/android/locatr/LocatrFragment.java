@@ -1,6 +1,7 @@
 package com.airo.android.locatr;
 
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -16,6 +17,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+
+import java.util.List;
 
 /**
  * Created by Airo on 02.07.2016.
@@ -94,9 +97,23 @@ public class LocatrFragment extends Fragment {
                     @Override
                     public void onLocationChanged(Location location) {
                         Log.i(TAG, "Got a fix: " + location);
+                        new SearchTask().execute(location);
                     }
                 });
 
+    }
+    private class SearchTask extends AsyncTask<Location,Void,Void> {
+        private GalleryItem mGalleryItem;
+        @Override
+        protected Void doInBackground(Location... params) {
+            FlickrFetchr fetchr = new FlickrFetchr();
+            List<GalleryItem> items = fetchr.searchPhotos(params[0]);
+            if (items.size() == 0) {
+                return null;
+            }
+            mGalleryItem = items.get(0);
+            return null;
+        }
     }
 
 }
