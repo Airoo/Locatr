@@ -19,6 +19,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 
 import java.io.IOException;
 import java.util.List;
@@ -26,12 +29,16 @@ import java.util.List;
 /**
  * Created by Airo on 02.07.2016.
  */
-public class LocatrFragment extends Fragment {
+public class LocatrFragment extends SupportMapFragment {
+    private GoogleMap mMap;
+
+    private Bitmap mMapImage;
+    private GalleryItem mMapItem;
+    private Location mCurrentLocation;
 
     private static final String TAG = "LocatrFragment";
 
     private GoogleApiClient mClient;
-    private ImageView mImageView;
 
     public static LocatrFragment newInstance() {
         return new LocatrFragment();
@@ -48,31 +55,33 @@ public class LocatrFragment extends Fragment {
                     public void onConnected(Bundle bundle) {
                         getActivity().invalidateOptionsMenu();
                     }
+
                     @Override
                     public void onConnectionSuspended(int i) {
                     }
                 })
                 .build();
+        getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                mMap = googleMap;
+            }
+        });
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_locatr, container, false);
-        mImageView = (ImageView) v.findViewById(R.id.image);
-        return v;
-    }
     @Override
     public void onStart() {
         super.onStart();
         getActivity().invalidateOptionsMenu();
         mClient.connect();
     }
+
     @Override
     public void onStop() {
         super.onStop();
         mClient.disconnect();
     }
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -80,6 +89,7 @@ public class LocatrFragment extends Fragment {
         MenuItem searchItem = menu.findItem(R.id.action_locate);
         searchItem.setEnabled(mClient.isConnected());
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -90,6 +100,7 @@ public class LocatrFragment extends Fragment {
                 return super.onOptionsItemSelected(item);
         }
     }
+
     private void findImage() {
         LocationRequest request = LocationRequest.create();
         request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -105,11 +116,15 @@ public class LocatrFragment extends Fragment {
                 });
 
     }
-    private class SearchTask extends AsyncTask<Location,Void,Void> {
+
+    private class SearchTask extends AsyncTask<Location, Void, Void> {
         private GalleryItem mGalleryItem;
         private Bitmap mBitmap;
+        private Location mLocation;
+
         @Override
         protected Void doInBackground(Location... params) {
+            mLocation = params[0];
             FlickrFetchr fetchr = new FlickrFetchr();
             List<GalleryItem> items = fetchr.searchPhotos(params[0]);
             if (items.size() == 0) {
@@ -124,9 +139,12 @@ public class LocatrFragment extends Fragment {
             }
             return null;
         }
+
         @Override
         protected void onPostExecute(Void result) {
-            mImageView.setImageBitmap(mBitmap);
+            mMapImage = mBitmap;
+            mMapItem = mGalleryItem;
+            mCurrentLocation = mLocation;
         }
     }
 

@@ -17,8 +17,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <meta-data
-            android:name="com.google.android.maps.v2.API_KEY"
-            android:value="7BA8D0435BDE331D9D871A74385C377BEBA72E1D"/>
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyB0seD_mCjcQruVtDXg2lYKkebzW-rJqx0"/>
         <activity android:name=".LocatrActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
